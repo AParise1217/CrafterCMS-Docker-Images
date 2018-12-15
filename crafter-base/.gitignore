@@ -1,0 +1,4 @@
+
+# Ignore Maven Generated
+target/
+git.properties

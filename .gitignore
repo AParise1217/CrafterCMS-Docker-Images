@@ -1,0 +1,10 @@
+
+# Ignore IntelliJ Generated
+.idea/
+*.iml
+
+# Ignore Maven Generated
+git.properties
+out/
+target/
+

@@ -1,0 +1,126 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.parisesoftware.craftercms</groupId>
+        <artifactId>base-docker-images</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>crafter-base</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Base CrafterCMS Docker Images :: Base Image</name>
+
+    <properties>
+
+        <docker.from>mongo:3.6</docker.from>
+        <mongo.docker.image.name>crafter-base</mongo.docker.image.name>
+
+        <docker.hostname.container>localhost</docker.hostname.container>
+        <docker.port.container.http>28817</docker.port.container.http>
+        <docker.port.container.tcp>27017</docker.port.container.tcp>
+
+        <env.REFRESHED_AT>${timestamp}</env.REFRESHED_AT>
+        <env.HOSTING_ENVIRONMENT>Docker</env.HOSTING_ENVIRONMENT>
+    </properties>
+
+    <build>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <plugins>
+
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- Mongo Dockerfile Definition -->
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <configuration>
+                    <autoPull>always</autoPull>
+                    <images>
+                        <image>
+                            <alias>${mongo.docker.image.name}</alias>
+                            <name>
+                                ${docker.repository}/${mongo.docker.image.name}:${version.number}
+                            </name>
+                            <build>
+                                <from>${docker.from}</from>
+                                <tags>
+                                    <tag>latest</tag>
+
+                                    <!-- Below Properties are loaded in by the Git-Maven-Plugin at Build Time -->
+                                    <!--suppress UnresolvedMavenProperty -->
+                                    <tag>${git.branch}-${project.version}</tag>
+                                    <!--suppress UnresolvedMavenProperty -->
+                                    <tag>${git.branch}-latest</tag>
+                                    <tag>${docker.image.additional.tag}</tag>
+                                </tags>
+                                <ports>
+                                    <port>${docker.port.container.http}</port>
+                                    <port>${docker.port.container.tcp}</port>
+                                </ports>
+                                <env>
+                                    <REFRESHED_AT>${env.REFRESHED_AT}</REFRESHED_AT>
+                                    <HOSTING_ENVIRONMENT>${env.HOSTING_ENVIRONMENT}</HOSTING_ENVIRONMENT>
+                                </env>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
+
+            <!-- Generates Kubernetes Compose Scripts -->
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>fabric8-maven-plugin</artifactId>
+
+                <configuration>
+                    <composeFile>docker-compose.yml</composeFile>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>resource</goal>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Filter Resources and Move to Target for Assembly Inclusion -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${basedir}/target/resources</outputDirectory>
+                    <resources>
+                        <resource>
+                            <directory>src/main/resources</directory>
+                            <filtering>true</filtering>
+                        </resource>
+                    </resources>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,248 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.parisesoftware.craftercms</groupId>
+    <artifactId>base-docker-images</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Base CrafterCMS Docker Images :: Parent</name>
+
+    <properties>
+
+        <!-- Maven Build Properties -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+
+        <git.properties>git.properties</git.properties>
+
+        <!-- Git Commit Plugin Property Hooks-->
+
+
+        <!-- Docker Image Properties -->
+        <!-- inject into maven build via -Ddocker.daemon.hostname=the.hostname -->
+        <docker.daemon.hostname>0.0.0.0</docker.daemon.hostname>
+        <docker.daemon.port>2375</docker.daemon.port>
+        <docker.daemon.protocol>http</docker.daemon.protocol>
+        <docker.daemon.url>${docker.daemon.protocol}://${docker.daemon.hostname}:${docker.daemon.port}</docker.daemon.url>
+        <docker.certsPath />
+
+        <!--&lt;!&ndash; Ex: docker.io &ndash;&gt;-->
+        <docker.registry>docker.io</docker.registry>
+        <docker.repository>${docker.registry}/AParise1217</docker.repository>
+
+        <docker.image.additional.tag />
+        <docker.assemblyDescriptor>${basedir}/src/main/fabric8/assembly.xml</docker.assemblyDescriptor>
+
+        <!-- Version Properties -->
+        <docker-maven-plugin.version>0.27.1</docker-maven-plugin.version>
+        <maven-resources-plugin.version>3.0.2</maven-resources-plugin.version>
+        <git-commit-id-plugin.version>2.2.5</git-commit-id-plugin.version>
+        <git-commit-id-plugin.dateFormat>yyyyMMdd-HHmmss</git-commit-id-plugin.dateFormat>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.install.skip>true</maven.install.skip>
+
+        <!-- Below Properties are loaded in by the Git-Maven-Plugin at Build Time -->
+        <!--suppress UnresolvedMavenProperty -->
+        <version.number>${git.commit.time}.${git.commit.id.abbrev}</version.number>
+    </properties>
+
+    <modules>
+        <module>crafter-base</module>
+        <!--<module>authoring</module>-->
+        <!--<module>delivery</module>-->
+    </modules>
+
+    <scm>
+        <connection>scm:git:git://github.com/AParise1217/base-crafter-images</connection>
+        <developerConnection>scm:git:ssh://git@github.com:AParise1217/base-crafter-images.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>git://github.com/AParise1217/base-crafter-images</url>
+    </scm>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <encoding>utf-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+            </plugin>
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+
+                <!-- Provides Git Information to Maven -->
+                <plugin>
+                    <groupId>pl.project13.maven</groupId>
+                    <artifactId>git-commit-id-plugin</artifactId>
+                    <version>${git-commit-id-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>revision</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+                        <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                        <generateGitPropertiesFilename>${git.properties}</generateGitPropertiesFilename>
+                        <verbose>true</verbose>
+                        <dateFormat>${git-commit-id-plugin.dateFormat}</dateFormat>
+                        <injectAllReactorProjects>true</injectAllReactorProjects>
+                        <skipPoms>false</skipPoms>
+                        <runOnlyOnce>false</runOnlyOnce>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>properties-maven-plugin</artifactId>
+                    <version>1.0-alpha-2</version>
+                    <executions>
+                        <execution>
+                            <phase>initialize</phase>
+                            <goals>
+                                <goal>read-project-properties</goal>
+                            </goals>
+                            <configuration>
+                                <files>
+                                    <file>${git.properties}</file>
+                                </files>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>1.8</version>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <configuration>
+                                <target>
+                                    <!-- Below Properties are loaded in by the Git-Maven-Plugin at Build Time -->
+                                    <!--suppress UnresolvedMavenProperty -->
+                                    <echo>Git Commit Id: ${git.commit.id}</echo>
+                                    <!--suppress UnresolvedMavenProperty -->
+                                    <echo>Git Branch: ${git.branch}</echo>
+                                </target>
+                            </configuration>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Builder for Docker Images -->
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>${docker-maven-plugin.version}</version>
+                    <configuration>
+                        <!--<dockerHost>${docker.daemon.url}</dockerHost>-->
+                        <!--<certPath>${docker.certsPath}</certPath>-->
+                        <verbose>true</verbose>
+                        <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+                    </configuration>
+                </plugin>
+
+                <!-- Global Maven Config for Resource Filtering/Copying -->
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${maven-resources-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>copy-resources</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>copy-resources</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>2.4</version>
+                    <configuration>
+                        <skip>${maven.install.skip}</skip>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.7</version>
+                    <configuration>
+                        <skip>${maven.deploy.skip}</skip>
+                    </configuration>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <!-- Docker Build during `./mvnw install` -->
+    <profiles>
+        <profile>
+            <id>docker-build-image</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>docker-build-image</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>remove</goal>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Publishes Docker Image during `./mvnw install` -->
+        <profile>
+            <id>docker-push-image</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>docker-push-image</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>push</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>
