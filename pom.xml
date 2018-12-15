@@ -29,9 +29,8 @@
         <docker.daemon.url>${docker.daemon.protocol}://${docker.daemon.hostname}:${docker.daemon.port}</docker.daemon.url>
         <docker.certsPath />
 
-        <!--&lt;!&ndash; Ex: docker.io &ndash;&gt;-->
         <docker.registry>docker.io</docker.registry>
-        <docker.repository>${docker.registry}/AParise1217</docker.repository>
+        <docker.repository>${docker.registry}/andrewparise1994</docker.repository>
 
         <docker.image.additional.tag />
         <docker.assemblyDescriptor>${basedir}/src/main/fabric8/assembly.xml</docker.assemblyDescriptor>
