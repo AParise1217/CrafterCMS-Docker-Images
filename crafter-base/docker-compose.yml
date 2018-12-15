@@ -1,0 +1,6 @@
+version: '3.5'
+
+services:
+  crafter-service:
+    image: docker.io/andrewparise1994/crafter-base:latest
+
