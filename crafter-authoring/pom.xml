@@ -9,16 +9,25 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>crafter-base</artifactId>
+    <artifactId>crafter-authoring</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Base CrafterCMS Docker Images :: Base Crafter Image</name>
+    <name>Base CrafterCMS Docker Images :: Crafter Authoring</name>
 
     <properties>
-        <docker.from>openjdk:8-jre-alpine</docker.from>
-        
+        <docker.from>${docker.repository}/${crafter-base.docker.image.name}:${version.number}</docker.from>
+
+        <crafter-authoring.docker.image.name>crafter-authoring</crafter-authoring.docker.image.name>
+
         <docker.hostname.container>localhost</docker.hostname.container>
+
+        <docker.port.container.mariadb>33306</docker.port.container.mariadb>
+        <docker.port.container.deployer>9191</docker.port.container.deployer>
+        <docker.port.container.tomcat>8080</docker.port.container.tomcat>
+        <docker.port.container.solr>8694</docker.port.container.solr>
+
+        <docker.assemblyBaseDir>${docker.dir.container.crafter}</docker.assemblyBaseDir>
 
         <env.REFRESHED_AT>${timestamp}</env.REFRESHED_AT>
         <env.HOSTING_ENVIRONMENT>Docker</env.HOSTING_ENVIRONMENT>
@@ -45,7 +54,7 @@
                 <artifactId>properties-maven-plugin</artifactId>
             </plugin>
 
-            <!-- Crafter-Base Dockerfile Definition -->
+            <!-- CrafterCMS Authoring Dockerfile Definition -->
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
@@ -53,15 +62,14 @@
                     <autoPull>always</autoPull>
                     <images>
                         <image>
-                            <alias>${crafter-base.docker.image.name}</alias>
+                            <alias>${crafter-authoring.docker.image.name}</alias>
                             <name>
-                                ${docker.repository}/${crafter-base.docker.image.name}:${version.number}
+                                ${docker.repository}/${crafter-authoring.docker.image.name}:${version.number}
                             </name>
                             <build>
                                 <from>${docker.from}</from>
                                 <tags>
                                     <tag>latest</tag>
-
                                     <!-- Below Properties are loaded in by the Git-Maven-Plugin at Build Time -->
                                     <!--suppress UnresolvedMavenProperty -->
                                     <tag>${git.branch}-${project.version}</tag>
@@ -69,28 +77,47 @@
                                     <tag>${git.branch}-latest</tag>
                                     <tag>${docker.image.additional.tag}</tag>
                                 </tags>
+                                <ports>
+                                    <port>${docker.port.container.solr}</port>
+                                    <port>${docker.port.container.tomcat}</port>
+                                    <port>${docker.port.container.mariadb}</port>
+                                    <port>${docker.port.container.deployer}</port>
+                                </ports>
                                 <env>
                                     <REFRESHED_AT>${env.REFRESHED_AT}</REFRESHED_AT>
                                     <HOSTING_ENVIRONMENT>${env.HOSTING_ENVIRONMENT}</HOSTING_ENVIRONMENT>
-                                    <CRAFTER_DIR>${env.CRAFTER_DIR}</CRAFTER_DIR>
                                 </env>
                                 <workdir>${docker.dir.container.crafter}</workdir>
                                 <runCmds>
-                                    <!-- Install Dependent Packages -->
-                                    <runCmd>apk update</runCmd>
-                                    <runCmd>apk add --no-cache bash</runCmd>
-                                    <runCmd>apk add lsof</runCmd>
-                                    <runCmd>apk add git</runCmd>
 
-                                    <!-- Link BASH to User ENV -->
-                                    <runCmd>ln -snf /bin/env /usr/bin/env</runCmd>
+                                    <!-- Add BASH to the Alpine Image -->
+                                    <runCmd>apk add --no-cache bash</runCmd>
+
+                                    <!-- Download Crafter Authoring Tar -->
+                                    <runCmd>wget https://downloads.craftercms.org/${craftercms.version}/crafter-cms-authoring.tar.gz -O /tmp/authoring.tar.gz</runCmd>
+
+                                    <!-- Set Permissions for when Authoring Bundle is Untarred -->
+                                    <runCmd>umask 022</runCmd>
+
+                                    <!-- Unpack Authoring Bundle -->
+                                    <runCmd>tar xvzf /tmp/authoring.tar.gz -C /${docker.user}/usr/src --no-same-permissions</runCmd>
 
                                     <!-- Setup `crafter` User -->
                                     <runCmd>addgroup -S ${docker.user}</runCmd>
                                     <runCmd>adduser -S -G ${docker.user} ${docker.user}</runCmd>
-
+                                    <runCmd>chown -R ${docker.user}:${docker.user} ${docker.dir.container.crafter}</runCmd>
+                                    <runCmd>chmod 755 ${docker.dir.container.crafter}</runCmd>
                                 </runCmds>
-                                <user>${docker.user}</user>
+                                <user>crafter</user>
+                                <assembly>
+                                    <basedir>${docker.assemblyBaseDir}</basedir>
+                                    <descriptor>${docker.assemblyDescriptor}</descriptor>
+                                </assembly>
+                                <entryPoint>
+                                    <exec>
+                                        <arg>${env.CRAFTER_DIR}/bin/entrypoint.sh</arg>
+                                    </exec>
+                                </entryPoint>
                             </build>
                         </image>
                     </images>
