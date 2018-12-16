@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  crafter-authoring:
+    image: docker.io/andrewparise1994/crafter-authoring:latest
+    restart: always
+    ports:
+      # Tomcat HTTP
+      - "8080:8080"
+      # Solr
+      - "8694:8694"
+      # Deployer
+      - "9191:9191"
+      # MariaDB
+      - "33306:33306"
