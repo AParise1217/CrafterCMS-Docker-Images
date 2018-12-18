@@ -1,17 +1,13 @@
-language: ruby
+language: bash
 
 services:
-- docker
+  - docker
 
-before_script:
-- docker --version
-
-before_deploy:
+before_install:
   - ./bin/docker_login.sh
 
-deploy:
-- provider: script
-  script: ./mvnw clean install -p docker-build-image,docker-push-image
+install:
+  - ./mvnw clean install -p docker-build-image,docker-push-image
 
 env:
   matrix:
