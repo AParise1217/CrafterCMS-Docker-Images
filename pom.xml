@@ -37,11 +37,13 @@
 
         <!-- Version Properties -->
         <docker-maven-plugin.version>0.27.1</docker-maven-plugin.version>
+        <fabric8-maven-plugin.version>3.5.41</fabric8-maven-plugin.version>
         <maven-resources-plugin.version>3.0.2</maven-resources-plugin.version>
         <git-commit-id-plugin.version>2.2.5</git-commit-id-plugin.version>
         <git-commit-id-plugin.dateFormat>yyyyMMdd-HHmmss</git-commit-id-plugin.dateFormat>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.install.skip>true</maven.install.skip>
+        <maven.kompose.skip>false</maven.kompose.skip>
 
         <!-- Below Properties are loaded in by the Git-Maven-Plugin at Build Time -->
         <!--suppress UnresolvedMavenProperty -->
@@ -166,6 +168,16 @@
                         <!--<certPath>${docker.certsPath}</certPath>-->
                         <verbose>true</verbose>
                         <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+                    </configuration>
+                </plugin>
+
+                <!-- Kubernetes Kompose -->
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>fabric8-maven-plugin</artifactId>
+                    <version>${fabric8-maven-plugin.version}</version>
+                    <configuration>
+                        <skip>${maven.kompose.skip}</skip>
                     </configuration>
                 </plugin>
 
