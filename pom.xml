@@ -48,13 +48,10 @@
         <version.number>${git.commit.time}.${git.commit.id.abbrev}</version.number>
 
         <!-- Shared Image Properties -->
-        <!--- the User to run the Crafter Process as in the Container -->
-        <docker.user>crafter</docker.user>
-        <docker.dir.container.crafter>/${docker.user}/usr/src/crafter</docker.dir.container.crafter>
+        <docker.dir.container.crafter>/opt/crafter</docker.dir.container.crafter>
         <crafter-base.docker.image.name>crafter-base</crafter-base.docker.image.name>
 
         <craftercms.version>3.0.16</craftercms.version>
-
 
         <env.CRAFTER_DIR>${docker.dir.container.crafter}</env.CRAFTER_DIR>
     </properties>
@@ -62,7 +59,7 @@
     <modules>
         <module>crafter-base</module>
         <module>crafter-authoring</module>
-        <!--<module>delivery</module>-->
+        <module>crafter-delivery</module>
     </modules>
 
     <scm>

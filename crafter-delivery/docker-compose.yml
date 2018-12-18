@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  crafter-delivery:
+    image: docker.io/andrewparise1994/crafter-delivery:latest
+    restart: always
+    ports:
+      # Tomcat HTTP
+      - "9080:9080"
+      # Solr
+      - "8695:8695"
+      # Deployer
+      - "9192:9192"

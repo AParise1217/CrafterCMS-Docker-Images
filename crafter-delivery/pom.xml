@@ -9,16 +9,24 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>crafter-base</artifactId>
+    <artifactId>crafter-delivery</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Base CrafterCMS Docker Images :: Base Crafter Image</name>
+    <name>Base CrafterCMS Docker Images :: Crafter Delivery</name>
 
     <properties>
-        <docker.from>openjdk:8</docker.from>
-        
+        <docker.from>${docker.repository}/${crafter-base.docker.image.name}:${version.number}</docker.from>
+
+        <crafter-delivery.docker.image.name>crafter-delivery</crafter-delivery.docker.image.name>
+
         <docker.hostname.container>localhost</docker.hostname.container>
+
+        <docker.port.container.deployer>9192</docker.port.container.deployer>
+        <docker.port.container.tomcat>9080</docker.port.container.tomcat>
+        <docker.port.container.solr>8695</docker.port.container.solr>
+
+        <docker.assemblyBaseDir>${docker.dir.container.crafter}</docker.assemblyBaseDir>
 
         <env.REFRESHED_AT>${timestamp}</env.REFRESHED_AT>
         <env.HOSTING_ENVIRONMENT>Docker</env.HOSTING_ENVIRONMENT>
@@ -45,7 +53,7 @@
                 <artifactId>properties-maven-plugin</artifactId>
             </plugin>
 
-            <!-- Crafter-Base Dockerfile Definition -->
+            <!-- CrafterCMS Delivery Dockerfile Definition -->
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
@@ -53,15 +61,14 @@
                     <autoPull>always</autoPull>
                     <images>
                         <image>
-                            <alias>${crafter-base.docker.image.name}</alias>
+                            <alias>${crafter-delivery.docker.image.name}</alias>
                             <name>
-                                ${docker.repository}/${crafter-base.docker.image.name}:${version.number}
+                                ${docker.repository}/${crafter-delivery.docker.image.name}:${version.number}
                             </name>
                             <build>
                                 <from>${docker.from}</from>
                                 <tags>
                                     <tag>latest</tag>
-
                                     <!-- Below Properties are loaded in by the Git-Maven-Plugin at Build Time -->
                                     <!--suppress UnresolvedMavenProperty -->
                                     <tag>${git.branch}-${project.version}</tag>
@@ -69,19 +76,43 @@
                                     <tag>${git.branch}-latest</tag>
                                     <tag>${docker.image.additional.tag}</tag>
                                 </tags>
+                                <ports>
+                                    <port>${docker.port.container.solr}</port>
+                                    <port>${docker.port.container.tomcat}</port>
+                                    <port>${docker.port.container.deployer}</port>
+                                </ports>
                                 <env>
                                     <REFRESHED_AT>${env.REFRESHED_AT}</REFRESHED_AT>
                                     <HOSTING_ENVIRONMENT>${env.HOSTING_ENVIRONMENT}</HOSTING_ENVIRONMENT>
-                                    <CRAFTER_DIR>${env.CRAFTER_DIR}</CRAFTER_DIR>
                                 </env>
                                 <workdir>${docker.dir.container.crafter}</workdir>
                                 <runCmds>
-                                    <!-- Install Dependent Packages -->
-                                    <runCmd>apt-get -y update</runCmd>
-                                    <runCmd>apt-get -y install lsof</runCmd>
-                                    <runCmd>apt-get -y install git</runCmd>
-                                    <runCmd>apt-get -y install --reinstall coreutils</runCmd>
+
+                                    <!-- Download Crafter Delivery Tar -->
+                                    <runCmd>wget https://downloads.craftercms.org/${craftercms.version}/crafter-cms-delivery.tar.gz -O /tmp/delivery.tar.gz</runCmd>
+
+                                    <!-- Set Permissions for when Delivery Bundle is Untarred -->
+                                    <runCmd>umask 022</runCmd>
+
+                                    <!-- Unpack Delivery Bundle -->
+                                    <runCmd>tar xvzf /tmp/delivery.tar.gz -C /opt --no-same-permissions</runCmd>
+
+                                    <!-- Setup `crafter` User -->
+                                    <runCmd>groupadd -r crafter </runCmd>
+                                    <runCmd>useradd -c "crafter" -d /opt/crafter -g crafter -s /bin/bash crafter</runCmd>
+                                    <runCmd>mkdir -p /opt/crafter/bin</runCmd>
+                                    <runCmd>chown -R crafter:crafter ${docker.dir.container.crafter}</runCmd>
                                 </runCmds>
+                                <user>crafter</user>
+                                <assembly>
+                                    <basedir>${docker.assemblyBaseDir}</basedir>
+                                    <descriptor>${docker.assemblyDescriptor}</descriptor>
+                                </assembly>
+                                <entryPoint>
+                                    <exec>
+                                        <arg>${env.CRAFTER_DIR}/bin/entrypoint.sh</arg>
+                                    </exec>
+                                </entryPoint>
                             </build>
                         </image>
                     </images>
