@@ -1,13 +1,20 @@
-language: bash
+sudo: false
+
+language: java
 
 services:
   - docker
 
-before_install:
-  - ./bin/docker_login.sh
+cache:
+  directories:
+  - "$HOME/.cache"
 
-install:
-  - ./mvnw clean install -p docker-build-image,docker-push-image
+deploy:
+  provider: script
+  script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn clean install -p docker-build-image,docker-push-image"
+  skip_cleanup: true
+  on:
+    tags: true
 
 env:
   matrix:
