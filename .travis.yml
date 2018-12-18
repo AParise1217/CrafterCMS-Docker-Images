@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 
 language: java
 
@@ -11,7 +11,7 @@ cache:
 
 deploy:
   provider: script
-  script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn clean install -p docker-build-image,docker-push-image"
+  script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn clean install -p docker-build-image,docker-push-image -Dmaven.kompose.skip=true"
   skip_cleanup: true
   on:
     tags: true
