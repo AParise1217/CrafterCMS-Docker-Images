@@ -14,6 +14,7 @@ before_install:
 
 install:
   - "mvn fabric8:install"
+  - "export PATH=$HOME/.fabric8/bin:$PATH"
 
 deploy:
   provider: script
