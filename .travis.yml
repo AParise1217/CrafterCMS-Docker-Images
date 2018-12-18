@@ -19,8 +19,6 @@ deploy:
   provider: script
   script: "Y | mvn clean install -p docker-build-image,docker-push-image"
   skip_cleanup: true
-  on:
-    tags: false
 
 env:
   global:
