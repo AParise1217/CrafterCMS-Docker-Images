@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Tomcat variables
 export CATALINA_HOME="$CRAFTER_HOME/apache-tomcat"

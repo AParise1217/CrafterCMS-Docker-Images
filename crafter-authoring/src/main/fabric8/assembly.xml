@@ -15,5 +15,23 @@
             </includes>
             <fileMode>755</fileMode>
         </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/resources</directory>
+            <outputDirectory>/etc/sudoers.d/crafter</outputDirectory>
+            <filtered>true</filtered>
+            <includes>
+                <include>sudo.crafter</include>
+            </includes>
+            <fileMode>755</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/resources</directory>
+            <outputDirectory>/opt/crafter/</outputDirectory>
+            <filtered>true</filtered>
+            <includes>
+                <include>.bashrc</include>
+            </includes>
+            <fileMode>755</fileMode>
+        </fileSet>
     </fileSets>
 </assembly>

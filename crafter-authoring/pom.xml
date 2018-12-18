@@ -90,9 +90,6 @@
                                 <workdir>${docker.dir.container.crafter}</workdir>
                                 <runCmds>
 
-                                    <!-- Add BASH to the Alpine Image -->
-                                    <runCmd>apk add --no-cache bash</runCmd>
-
                                     <!-- Download Crafter Authoring Tar -->
                                     <runCmd>wget https://downloads.craftercms.org/${craftercms.version}/crafter-cms-authoring.tar.gz -O /tmp/authoring.tar.gz</runCmd>
 
@@ -100,13 +97,13 @@
                                     <runCmd>umask 022</runCmd>
 
                                     <!-- Unpack Authoring Bundle -->
-                                    <runCmd>tar xvzf /tmp/authoring.tar.gz -C /${docker.user}/usr/src --no-same-permissions</runCmd>
+                                    <runCmd>tar xvzf /tmp/authoring.tar.gz -C /opt --no-same-permissions</runCmd>
 
                                     <!-- Setup `crafter` User -->
-                                    <runCmd>addgroup -S ${docker.user}</runCmd>
-                                    <runCmd>adduser -S -G ${docker.user} ${docker.user}</runCmd>
-                                    <runCmd>chown -R ${docker.user}:${docker.user} ${docker.dir.container.crafter}</runCmd>
-                                    <runCmd>chmod 755 ${docker.dir.container.crafter}</runCmd>
+                                    <runCmd>groupadd -r crafter </runCmd>
+                                    <runCmd>useradd -c "crafter" -d /opt/crafter -g crafter -s /bin/bash crafter</runCmd>
+                                    <runCmd>mkdir -p /opt/crafter/bin</runCmd>
+                                    <runCmd>chown -R crafter:crafter ${docker.dir.container.crafter}</runCmd>
                                 </runCmds>
                                 <user>crafter</user>
                                 <assembly>
