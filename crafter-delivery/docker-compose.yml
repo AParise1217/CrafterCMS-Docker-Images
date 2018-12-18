@@ -11,5 +11,3 @@ services:
       - "8695:8695"
       # Deployer
       - "9192:9192"
-    entrypoint:
-    - /crafter/usr/src/crafter/bin/startup.sh

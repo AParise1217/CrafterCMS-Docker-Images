@@ -59,7 +59,7 @@
     <modules>
         <module>crafter-base</module>
         <module>crafter-authoring</module>
-        <!--<module>delivery</module>-->
+        <module>crafter-delivery</module>
     </modules>
 
     <scm>

@@ -2,19 +2,36 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
     <id>${project.artifactId}</id>
-    <includeBaseDirectory>false</includeBaseDirectory>
-    <files>
-        <file>
-            <source>src/main/resources/entrypoint.sh</source>
+    <fileSets>
+        <fileSet>
+            <directory>${project.build.directory}/resources</directory>
             <outputDirectory>bin/</outputDirectory>
             <filtered>true</filtered>
-            <fileMode>0755</fileMode>
-        </file>
-        <!--<file>-->
-            <!--<source>src/main/resources/startup.sh</source>-->
-            <!--<outputDirectory>bin/</outputDirectory>-->
-            <!--<filtered>true</filtered>-->
-            <!--<fileMode>0755</fileMode>-->
-        <!--</file>-->
-    </files>
+            <includes>
+                <include>entrypoint.sh</include>
+                <include>crafter.sh</include>
+                <include>crafter-setenv.sh</include>
+                <include>startup.sh</include>
+            </includes>
+            <fileMode>755</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/resources</directory>
+            <outputDirectory>/etc/sudoers.d/crafter</outputDirectory>
+            <filtered>true</filtered>
+            <includes>
+                <include>sudo.crafter</include>
+            </includes>
+            <fileMode>755</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/resources</directory>
+            <outputDirectory>/opt/crafter/</outputDirectory>
+            <filtered>true</filtered>
+            <includes>
+                <include>.bashrc</include>
+            </includes>
+            <fileMode>755</fileMode>
+        </fileSet>
+    </fileSets>
 </assembly>

@@ -88,12 +88,6 @@
                                 <workdir>${docker.dir.container.crafter}</workdir>
                                 <runCmds>
 
-                                    <!-- Link BASH to User ENV -->
-                                    <runCmd>ln -snf /bin/env /usr/bin/env</runCmd>
-
-                                    <!-- Add BASH to the Alpine Image -->
-                                    <runCmd>apk add --no-cache bash</runCmd>
-
                                     <!-- Download Crafter Delivery Tar -->
                                     <runCmd>wget https://downloads.craftercms.org/${craftercms.version}/crafter-cms-delivery.tar.gz -O /tmp/delivery.tar.gz</runCmd>
 
@@ -101,22 +95,24 @@
                                     <runCmd>umask 022</runCmd>
 
                                     <!-- Unpack Delivery Bundle -->
-                                    <runCmd>tar xvzf /tmp/delivery.tar.gz -C /${docker.user}/usr/src --no-same-permissions</runCmd>
+                                    <runCmd>tar xvzf /tmp/delivery.tar.gz -C /opt --no-same-permissions</runCmd>
 
+                                    <!-- Setup `crafter` User -->
+                                    <runCmd>groupadd -r crafter </runCmd>
+                                    <runCmd>useradd -c "crafter" -d /opt/crafter -g crafter -s /bin/bash crafter</runCmd>
+                                    <runCmd>mkdir -p /opt/crafter/bin</runCmd>
+                                    <runCmd>chown -R crafter:crafter ${docker.dir.container.crafter}</runCmd>
                                 </runCmds>
-
-                                <user>${docker.user}</user>
+                                <user>crafter</user>
                                 <assembly>
                                     <basedir>${docker.assemblyBaseDir}</basedir>
-                                    <mode>dir</mode>
                                     <descriptor>${docker.assemblyDescriptor}</descriptor>
-                                    <user>${docker.user}:${docker.user}</user>
                                 </assembly>
                                 <entryPoint>
                                     <exec>
-                                        <arg>${docker.dir.container.crafter}/bin/entrypoint.sh</arg>
+                                        <arg>${env.CRAFTER_DIR}/bin/entrypoint.sh</arg>
                                     </exec>
-                            </entryPoint>
+                                </entryPoint>
                             </build>
                         </image>
                     </images>

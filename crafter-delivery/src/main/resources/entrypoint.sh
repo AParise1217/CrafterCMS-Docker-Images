@@ -1,9 +1,9 @@
 #!/bin/bash
 
-CRAFTER_DIR=/${docker.user}/usr/src/crafter
-
 # Kickoff the CrafterCMS Startup Script and Tail Logs
 
-cd /${docker.user}/usr/src/crafter/bin && startup.sh && \
-sleep 10 # give Crafter Delivery Environment time to create the newest log
-exec tail -f ${CRAFTER_DIR}/logs/tomcat/catalina.out
+#CRAFTER_BIN_DIR=/crafter/usr/src/crafter/bin
+
+cd /opt/crafter/bin && ./startup.sh && \
+sleep 10 # give Crafter Authoring Environment time to create the newest log
+exec tail -f /opt/crafter/logs/tomcat/catalina.out
