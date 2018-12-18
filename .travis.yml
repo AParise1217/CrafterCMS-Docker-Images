@@ -11,7 +11,7 @@ cache:
 
 deploy:
   provider: script
-  script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn clean install -p docker-build-image,docker-push-image -Dmaven.kompose.skip=true"
+  script: "cp .travis.settings.xml $HOME/.m2/settings.xml && && mvn fabric8:install && mvn clean install -p docker-build-image,docker-push-image"
   skip_cleanup: true
   on:
     tags: true
